@@ -1,5 +1,7 @@
 "use strict";
 
+const APP_VERSION = "2026.06.18-update-screen-v3";
+const VERSION_URL = "version.json";
 const VALID_COUNTS = [8, 16, 24, 32, 40];
 const GRID_PRESETS = {
   8: { rows: 2, cols: 4 },
@@ -9,7 +11,7 @@ const GRID_PRESETS = {
   40: { rows: 5, cols: 8 }
 };
 const MAX_BYTES = 1024 * 1024;
-const state = { mode: "grid", files: [], sourceUrls: [], deferredInstall: null };
+const state = { mode: "grid", files: [], sourceUrls: [], deferredInstall: null, serviceWorkerRegistration: null, updateReloadPending: false };
 const $ = id => document.getElementById(id);
 
 const els = {
@@ -172,6 +174,82 @@ function download(blob, name) { const url = URL.createObjectURL(blob); const lin
 function showResult(message, error = false) { els.result.textContent = message; els.result.hidden = false; els.result.style.borderColor = error ? "#c54a43" : "#176b5b"; }
 function setProgress(value) { els.progress.hidden = false; els.progressBar.style.width = `${value}%`; }
 
+function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+function setBootProgress(label, percent) {
+  const safePercent = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  $("bootProgressText").textContent = label;
+  $("bootProgressPercent").textContent = `${safePercent}%`;
+  $("bootProgressFill").style.width = `${safePercent}%`;
+}
+
+function setBootStatus(text, progressText, percent) {
+  $("bootStatus").textContent = text;
+  $("bootVersion").textContent = `現在の版: ${APP_VERSION}`;
+  setBootProgress(progressText || text, percent);
+}
+
+function revealApp() {
+  $("bootScreen").classList.add("screen-hidden");
+}
+
+function reloadForFreshVersion(version) {
+  const next = new URL(window.location.href);
+  next.searchParams.set("stamp_v", version || Date.now().toString());
+  window.location.replace(next.toString());
+}
+
+async function refreshServiceWorker() {
+  if (!state.serviceWorkerRegistration) return;
+  try {
+    await state.serviceWorkerRegistration.update();
+    await wait(700);
+  } catch {
+    // The cache-busted reload below still gives the network a chance to update.
+  }
+}
+
+async function checkBuildVersionOnBoot() {
+  setBootStatus("最新版を確認しています。", "アップデートを確認しています…", 10);
+  if (!location.protocol.startsWith("http")) {
+    setBootStatus("ローカル版で起動中です。", "起動準備中…", 95);
+    await wait(180);
+    setBootStatus("起動します。", "完了", 100);
+    await wait(160);
+    revealApp();
+    return;
+  }
+
+  try {
+    setBootStatus("更新データを取得しています。", "データを取得しています…", 28);
+    const response = await fetch(`${VERSION_URL}?t=${Date.now()}`, {
+      cache: "no-store",
+      headers: { "Cache-Control": "no-cache" }
+    });
+    setBootStatus("バージョン情報を確認しています。", "データを確認しています…", 42);
+    const remote = response.ok ? await response.json() : null;
+    if (remote?.version && remote.version !== APP_VERSION) {
+      setBootStatus("新しい版を検出しました。", "ファイルを更新しています…", 70);
+      sessionStorage.setItem("line_stamp_remote_version", remote.version);
+      await refreshServiceWorker();
+      setBootStatus("更新を反映しています。", "起動準備中…", 95);
+      await wait(350);
+      setBootStatus("更新を反映しています。", "完了", 100);
+      await wait(180);
+      reloadForFreshVersion(remote.version);
+      return;
+    }
+    setBootStatus("最新版です。起動します。", "起動準備中…", 95);
+  } catch {
+    setBootStatus("更新確認に失敗しました。保存済み版で起動します。", "保存済み版を使用します", 95);
+  }
+
+  await wait(240);
+  setBootStatus("起動します。", "完了", 100);
+  await wait(160);
+  revealApp();
+}
+
 async function generate() {
   const count = Number(els.count.value);
   if (!VALID_COUNTS.includes(count)) return showResult("スタンプ数が正しくありません。", true);
@@ -207,6 +285,15 @@ els.generate.addEventListener("click", generate);
 els.dropZone.addEventListener("drop", event => receiveFiles(event.dataTransfer.files));
 window.addEventListener("beforeinstallprompt", event => { event.preventDefault(); state.deferredInstall = event; els.install.hidden = false; });
 els.install.addEventListener("click", async () => { if (!state.deferredInstall) return; state.deferredInstall.prompt(); await state.deferredInstall.userChoice; state.deferredInstall = null; els.install.hidden = true; });
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+window.addEventListener("load", async () => {
+  if ("serviceWorker" in navigator) {
+    try {
+      state.serviceWorkerRegistration = await navigator.serviceWorker.register("./sw.js");
+    } catch {
+      state.serviceWorkerRegistration = null;
+    }
+  }
+  checkBuildVersionOnBoot();
+});
 applyGridPreset();
 updateIndexOptions();

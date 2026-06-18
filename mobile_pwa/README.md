@@ -28,6 +28,7 @@ python -m http.server 8080
 - main.png 240x240、tab.png 96x74
 - ZIPとreport.txtを端末内で生成
 - 初回表示後のオフライン起動
+- 起動時のバージョン確認と自動更新
 
 ## 注意
 

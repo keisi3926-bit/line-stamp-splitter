@@ -13,6 +13,23 @@
   <title>LINEスタンプ整形</title>
 </head>
 <body>
+  <section id="bootScreen" class="boot-screen" aria-live="polite">
+    <div class="boot-panel">
+      <img src="icons/icon-192.png" alt="" width="58" height="58">
+      <p class="boot-eyebrow">LINE STAMP TOOL</p>
+      <h2>バージョン確認中</h2>
+      <p id="bootStatus">最新版を確認しています。</p>
+      <div class="boot-progress" aria-label="アップデート進捗">
+        <div class="boot-progress-meta">
+          <span id="bootProgressText">アップデートを確認しています…</span>
+          <strong id="bootProgressPercent">0%</strong>
+        </div>
+        <div class="boot-progress-track" aria-hidden="true"><i id="bootProgressFill"></i></div>
+      </div>
+      <small id="bootVersion">--</small>
+    </div>
+  </section>
+
   <header class="app-header">
     <div class="brand">
       <img src="icons/icon-192.png" alt="" width="42" height="42">
