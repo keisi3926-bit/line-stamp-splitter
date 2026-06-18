@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+outputs/
+work/
+output_line_stickers/
+dummy_input/
+dummy_grid.png
