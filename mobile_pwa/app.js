@@ -1,6 +1,13 @@
 "use strict";
 
 const VALID_COUNTS = [8, 16, 24, 32, 40];
+const GRID_PRESETS = {
+  8: { rows: 2, cols: 4 },
+  16: { rows: 4, cols: 4 },
+  24: { rows: 4, cols: 6 },
+  32: { rows: 4, cols: 8 },
+  40: { rows: 5, cols: 8 }
+};
 const MAX_BYTES = 1024 * 1024;
 const state = { mode: "grid", files: [], sourceUrls: [], deferredInstall: null };
 const $ = id => document.getElementById(id);
@@ -31,6 +38,13 @@ function updateIndexOptions() {
     const previous = Number(select.value) || 1;
     select.replaceChildren(...Array.from({ length: count }, (_, i) => new Option(`${i + 1}番`, String(i + 1), false, i + 1 === previous)));
   }
+}
+
+function applyGridPreset() {
+  const preset = GRID_PRESETS[Number(els.count.value)];
+  if (!preset) return;
+  els.rows.value = String(preset.rows);
+  els.cols.value = String(preset.cols);
 }
 
 function clearSelection() {
@@ -184,7 +198,7 @@ async function generate() {
 
 document.querySelectorAll(".mode-tab").forEach(button => button.addEventListener("click", () => setMode(button.dataset.mode)));
 els.input.addEventListener("change", event => receiveFiles(event.target.files));
-els.count.addEventListener("change", () => { updateIndexOptions(); if (state.files.length) renderSourcePreviews(); });
+els.count.addEventListener("change", () => { applyGridPreset(); updateIndexOptions(); if (state.files.length) renderSourcePreviews(); });
 els.removeWhite.addEventListener("change", () => els.thresholdRow.hidden = !els.removeWhite.checked);
 els.threshold.addEventListener("input", () => els.thresholdValue.value = els.threshold.value);
 els.generate.addEventListener("click", generate);
@@ -194,4 +208,5 @@ els.dropZone.addEventListener("drop", event => receiveFiles(event.dataTransfer.f
 window.addEventListener("beforeinstallprompt", event => { event.preventDefault(); state.deferredInstall = event; els.install.hidden = false; });
 els.install.addEventListener("click", async () => { if (!state.deferredInstall) return; state.deferredInstall.prompt(); await state.deferredInstall.userChoice; state.deferredInstall = null; els.install.hidden = true; });
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+applyGridPreset();
 updateIndexOptions();

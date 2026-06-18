@@ -4,6 +4,7 @@ __pycache__/
 Thumbs.db
 outputs/
 work/
+.codex-remote-attachments/
 output_line_stickers/
 dummy_input/
 dummy_grid.png
