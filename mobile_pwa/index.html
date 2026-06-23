@@ -38,7 +38,12 @@
     <button id="installButton" class="icon-button" type="button" hidden aria-label="アプリをインストール" title="アプリをインストール">＋</button>
   </header>
 
-  <main>
+  <nav class="tool-tabs" role="tablist" aria-label="機能選択">
+    <button class="tool-tab active" data-workspace="split" type="button" role="tab" aria-selected="true">8コマ分割</button>
+    <button class="tool-tab" data-workspace="single" type="button" role="tab" aria-selected="false">単体リサイズ</button>
+  </nav>
+
+  <main id="splitWorkspace" class="workspace">
     <section class="input-section" aria-labelledby="inputTitle">
       <div class="section-heading"><span>1</span><h2 id="inputTitle">画像を選ぶ</h2></div>
       <div class="mode-tabs" role="tablist" aria-label="入力形式">
@@ -67,6 +72,55 @@
       </div>
       <label class="toggle-row"><span><strong>白背景を透明化</strong><small>白い絵柄も消える場合があります</small></span><input id="removeWhite" type="checkbox" role="switch"></label>
       <label id="thresholdRow" class="range-row" hidden><span>白判定 <output id="thresholdValue">245</output></span><input id="threshold" type="range" min="200" max="255" value="245"></label>
+      <div class="text-settings" aria-label="文字入れ設定">
+        <h3>文字入れ</h3>
+        <div class="settings-grid">
+          <label>ベース文字
+            <select id="textPreset">
+              <option value="">文字なし</option>
+              <option value="よろしく">よろしく</option>
+              <option value="ありがとう">ありがとう</option>
+              <option value="了解">了解</option>
+              <option value="OK">OK</option>
+              <option value="NG">NG</option>
+              <option value="おつかれ">おつかれ</option>
+              <option value="おはよう">おはよう</option>
+              <option value="おやすみ">おやすみ</option>
+            </select>
+          </label>
+          <label>自由入力<input id="textCustom" type="text" placeholder="任意の文字"></label>
+          <label>文字位置
+            <select id="textPosition">
+              <option value="top">上</option>
+              <option value="middle">中央</option>
+              <option value="bottom" selected>下</option>
+            </select>
+          </label>
+          <label>文字サイズ
+            <select id="textSize">
+              <option value="small">小</option>
+              <option value="medium" selected>中</option>
+              <option value="large">大</option>
+            </select>
+          </label>
+          <label>文字色
+            <select id="textColor">
+              <option value="white" selected>白</option>
+              <option value="black">黒</option>
+              <option value="red">赤</option>
+              <option value="blue">青</option>
+              <option value="yellow">黄</option>
+            </select>
+          </label>
+          <label>縁取り
+            <select id="textStroke">
+              <option value="black" selected>黒フチ</option>
+              <option value="white">白フチ</option>
+              <option value="none">なし</option>
+            </select>
+          </label>
+        </div>
+      </div>
     </section>
 
     <section aria-labelledby="previewTitle">
@@ -75,6 +129,45 @@
       <button id="generateButton" class="primary-button" type="button" disabled>ZIPを作成</button>
       <div id="progress" class="progress" hidden><div></div></div>
       <div id="result" class="result" hidden aria-live="polite"></div>
+    </section>
+  </main>
+
+  <main id="singleWorkspace" class="workspace" hidden>
+    <section aria-labelledby="singleInputTitle">
+      <div class="section-heading"><span>1</span><h2 id="singleInputTitle">画像を選ぶ</h2></div>
+      <label class="drop-zone" id="singleDropZone">
+        <input id="singleFileInput" type="file" accept="image/*">
+        <strong>単体画像を選択</strong>
+        <span>PNG / JPEG / WebP</span>
+      </label>
+      <div id="singleSelectionSummary" class="selection-summary" hidden></div>
+    </section>
+
+    <section aria-labelledby="singleSettingsTitle">
+      <div class="section-heading"><span>2</span><h2 id="singleSettingsTitle">出力設定</h2></div>
+      <div class="single-settings">
+        <label>出力タイプ
+          <select id="singleOutputType">
+            <option value="stamp">スタンプ画像（370×320）</option>
+            <option value="main">メイン画像（240×240）</option>
+            <option value="tab">トークルームタブ画像（96×74）</option>
+          </select>
+        </label>
+      </div>
+      <label class="toggle-row"><span><strong>余白を自動トリミング</strong><small>透明部分または除去した白背景を判定</small></span><input id="singleTrim" type="checkbox" role="switch" checked></label>
+      <label class="toggle-row"><span><strong>白背景を透明化</strong><small>白に近い画素を背景として扱います</small></span><input id="singleRemoveWhite" type="checkbox" role="switch"></label>
+      <label id="singleThresholdRow" class="range-row" hidden><span>白判定 <output id="singleThresholdValue">245</output></span><input id="singleThreshold" type="range" min="200" max="255" value="245"></label>
+    </section>
+
+    <section aria-labelledby="singlePreviewTitle">
+      <div class="section-heading"><span>3</span><h2 id="singlePreviewTitle">プレビュー</h2></div>
+      <div id="singlePreviewFrame" class="single-preview checker">
+        <canvas id="singlePreviewCanvas" width="370" height="320" aria-label="単体画像の出力プレビュー"></canvas>
+        <p id="singlePreviewEmpty" class="empty-state">画像を選ぶと出力結果が表示されます</p>
+      </div>
+      <p id="singleOutputMeta" class="output-meta">出力: 370×320 PNG</p>
+      <button id="singleDownloadButton" class="primary-button" type="button" disabled>PNGをダウンロード</button>
+      <div id="singleResult" class="result" hidden aria-live="polite"></div>
     </section>
   </main>
 

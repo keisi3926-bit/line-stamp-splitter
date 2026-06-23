@@ -27,5 +27,7 @@ python line_stamp_splitter.py input.png --rows 4 --cols 4 --count 16 --remove-wh
 - 白背景除去、余白トリミング、padding
 - スタンプ画像を370x320以内の透過PNGへ変換
 - main.png、tab.png、report.txt、提出用ZIPを生成
+- 単体画像をスタンプ、メイン、トークルームタブ用の透過PNGへリサイズ
+- 8コマ分割後の各スタンプに同じ文字を合成
 
 最終提出前にはLINE Creators Marketの最新ガイドラインと生成画像の権利関係を確認してください。

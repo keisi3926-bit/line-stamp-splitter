@@ -1,4 +1,4 @@
-const CACHE = "line-stamp-pwa-v3";
+const CACHE = "line-stamp-pwa-v5";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./version.json", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
 self.addEventListener("install", event => {
   self.skipWaiting();
